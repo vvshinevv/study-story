@@ -2,7 +2,6 @@ package com.study.story.concurrent.service;
 
 import com.study.story.concurrent.entity.Account;
 import com.study.story.concurrent.repository.AccountRepository;
-import org.aspectj.lang.annotation.Before;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,6 +11,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
 class AccountServiceTest {
@@ -45,6 +46,25 @@ class AccountServiceTest {
 
         latch.await();
         Account richAccount = accountRepository.findById(accountId).orElseThrow(RuntimeException::new);
-        Assertions.assertThat(richAccount.getBalance()).isEqualTo(10 * 100);
+        assertThat(richAccount.getBalance()).isEqualTo(10 * 100);
+    }
+
+    @Test
+    public void SimultaneousDepositPassWithNoRaceCondition() throws InterruptedException {
+        Account account = new Account("신한 S20");
+        account.setBalance(1000L);
+        account = accountRepository.save(account);
+        long accountId = account.getAccountId();
+
+        CountDownLatch latch = new CountDownLatch(100);
+        for (int i = 0; i < 100; i++) {
+            executorService.execute(() -> {
+                accountService.deposit(accountId, 10L);
+                latch.countDown();
+            });
+        }
+        latch.await();
+        Account richAccount = accountRepository.findById(accountId).orElseThrow(RuntimeException::new);
+        assertThat(richAccount.getBalance()).isEqualTo(1000 + 10 * 100);
     }
 }

@@ -9,6 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.Version;
 
 @Getter
 @Setter
@@ -27,7 +28,11 @@ public class Account {
 
     private Long balance;
 
+    @Version
+    private Long version;
+
     public Account(String name) {
         this.name = name;
+        this.balance = 0L;
     }
 }
