@@ -6,6 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public interface AccountService {
 
-    Long deposit(Long accountId, Long amount);
+    void deposit(Long accountId, Long amount);
 
 }
